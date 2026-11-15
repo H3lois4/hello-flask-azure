@@ -1,4 +1,41 @@
-name: CD - deploy no Azure
+name: CI/CD - Flask no Azure
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: hello-flask-heloisa
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  build:
+    name: CI - instalar e testar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt pytest
+
+      - name: Rodar testes
+        run: pytest -q
+
+      - name: Guardar o código para o deploy
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: |
+            app.py
+            requirements.txt
+
+  deploy:
+    name: CD - deploy no Azure
     needs: build
     runs-on: ubuntu-latest
     steps:
